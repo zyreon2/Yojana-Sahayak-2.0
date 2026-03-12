@@ -1664,23 +1664,23 @@ async function doCompleteProfile(){
   if(btn){btn.textContent='Saving…';btn.disabled=true;}
 
   try{
-    // Get uid — first try live session, then fall back to stored userId from signUp
-    let uid = _pendingCreds.userId;
-    const {data:sd} = await _supa.auth.getSession();
-    if(sd?.session?.user?.id){ uid=sd.session.user.id; _supaSession=sd.session; }
-
-    if(!uid){
-      // No session yet — sign in immediately to get one
-      const {data:sid,error:sie} = await _supa.auth.signInWithPassword({
-        email:_pendingCreds.email, password:_pendingCreds.password
-      });
-      if(sie||!sid?.session){showAuthMsg('spd-err','Session error. Please try again.');if(btn){btn.textContent='Complete Setup 🚀';btn.disabled=false;}return;}
-      uid=sid.session.user.id;
-      _supaSession=sid.session;
+    // Always sign in to guarantee a valid session before writing to profiles
+    // (auth.uid() must match the row id for RLS to allow the insert)
+    const {data:sid, error:sie} = await _supa.auth.signInWithPassword({
+      email: _pendingCreds.email,
+      password: _pendingCreds.password
+    });
+    if(sie || !sid?.session){
+      showAuthMsg('spd-err', sie?.message || 'Could not start session. Please try again.');
+      if(btn){btn.textContent='Complete Setup 🚀';btn.disabled=false;}
+      return;
     }
+    _supaSession = sid.session;
+    const uid = sid.session.user.id;
 
     const {error} = await _supa.from('profiles').upsert({
-      id:uid, email:_pendingCreds.email,
+      id: uid,
+      email: _pendingCreds.email,
       name, qualification:qual, department:dept,
       designation:desig, hospital:hosp, phone, city
     });
