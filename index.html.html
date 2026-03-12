@@ -1614,9 +1614,11 @@ async function doSignIn(){
     if(error){showAuthMsg('si-err',error.message);return;}
     if(!data||!data.session){showAuthMsg('si-err','Sign in failed. Please try again.');return;}
     _supaSession=data.session;
-    const p=await _loadProfileFromSupabase(data.user.id);
-    if(p)_applyProfileToAccount(p);
-    MAIN();
+    try{
+      const p=await _loadProfileFromSupabase(data.user.id);
+      if(p) _applyProfileToAccount(p);
+    }catch(pe){ /* profile load failed — still proceed to app */ }
+    MAIN(); // always navigate regardless of profile load result
   }catch(e){
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
     showAuthMsg('si-err','Error: '+e.message);
@@ -1758,19 +1760,22 @@ function toggleEye(id,btn){
   else{inp.type='password';btn.innerHTML='&#128065;'}
 }
 
-// ── Load profile from Supabase ───────────────────
+// ── Load profile from Supabase (with timeout) ────
 async function _loadProfileFromSupabase(uid){
+  if(!uid) return null;
   try{
-    const {data,error}=await _supa.from('profiles').select('*').eq('id',uid).single();
-    if(error||!data)return null;
-    // map supabase column names → internal profile keys
+    // Race against a 5s timeout so sign-in never gets stuck
+    const fetchProfile = _supa.from('profiles').select('*').eq('id',uid).single();
+    const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+    const {data,error} = await Promise.race([fetchProfile, timeout]);
+    if(error||!data) return null;
     return {
-      name:data.name, qual:data.qualification,
+      name:data.name,       qual:data.qualification,
       dept:data.department, desig:data.designation,
-      hosp:data.hospital, phone:data.phone,
-      city:data.city, email:data.email
+      hosp:data.hospital,   phone:data.phone,
+      city:data.city,       email:data.email
     };
-  }catch(e){return null;}
+  }catch(e){ return null; } // timeout or error → return null, never block
 }
 
 // ── Apply profile to Account tab + update DOM ────
