@@ -1573,6 +1573,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let _pendingCreds = null;
 let _supaSession = null;
+let _directNavDone = false; // prevents onAuthStateChange from overriding explicit MAIN() calls
 
 function isEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((e||'').trim())}
 
@@ -1618,6 +1619,7 @@ async function doSignIn(){
       const p=await _loadProfileFromSupabase(data.user.id);
       if(p) _applyProfileToAccount(p);
     }catch(pe){ /* profile load failed — still proceed to app */ }
+    _directNavDone=true; // block onAuthStateChange from overriding our navigation
     MAIN(); // always navigate regardless of profile load result
   }catch(e){
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
@@ -1690,6 +1692,7 @@ async function doCompleteProfile(){
     if(error){showAuthMsg('spd-err','Could not save profile: '+error.message);return;}
     _pendingCreds=null;
     _applyProfileToAccount(profile);
+    _directNavDone=true; // block onAuthStateChange from overriding our navigation
     MAIN();
   }catch(e){
     if(btn){btn.textContent='Complete Setup 🚀';btn.disabled=false;}
@@ -2395,11 +2398,14 @@ function doLogout(){
     if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session){
       // Skip auto-login if we're in password recovery flow
       if(document.getElementById('lv-newpw')?.style.display!=='none') return;
+      // Skip if doSignIn / doCompleteProfile already handled navigation
+      if(_directNavDone){ _directNavDone=false; return; }
       _supaSession=session;
       const p=await _loadProfileFromSupabase(session.user.id);
       if(p){ _applyProfileToAccount(p); MAIN(); }
       else {
-        _pendingCreds={email:session.user.email,userId:session.user.id};
+        // Preserve _pendingCreds if already set by doSignUp (it contains the password)
+        if(!_pendingCreds) _pendingCreds={email:session.user.email,userId:session.user.id};
         localStorage.setItem('ac_ob','1');
         SCR('s-signup');
       }
