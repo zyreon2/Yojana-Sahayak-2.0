@@ -799,15 +799,6 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
 .acc-stat-n{font-size:20px;font-weight:800;color:var(--teal)}
 .acc-stat-l{font-size:10px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
 
-.acc-logout{
-  width:100%;padding:14px;margin-top:4px;margin-bottom:20px;
-  background:var(--card);border:1.5px solid #fee2e2;
-  border-radius:var(--r);color:#dc2626;
-  font-family:'Sora',sans-serif;font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.acc-logout:active{background:#fee2e2}
 .acc-ver{text-align:center;font-size:11px;color:var(--muted3);padding-bottom:8px;font-weight:500}
 
 /* edit mode shimmer */
@@ -1123,11 +1114,8 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
           <div class="home-logo">🏥</div>
           <div>
             <div class="home-brand-name">Yojana Sahayak</div>
-            <div class="home-brand-sub">MJPJAY · PMJAY · HBP 2022</div>
+            <div class="home-brand-sub">MJPJAY · PMJAY</div>
           </div>
-        </div>
-        <div class="home-notif-btn" onclick="TAB('notif')">
-          🔔<div class="home-notif-badge">3</div>
         </div>
       </div>
       <div class="home-greet" id="home-greet" style="display:none;margin:10px 0 14px;position:relative;z-index:1;">
@@ -1205,13 +1193,6 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
   </div>
 
   <!-- NOTIFICATIONS -->
-  <div id="t-notif" style="display:none;flex-direction:column;flex:1;overflow:hidden">
-    <div class="notif-head">
-      <h2>Scheme Alerts</h2>
-    </div>
-    <div class="app-body"><div class="notif-body" id="notif-list"></div></div>
-  </div>
-
   <!-- ACCOUNT -->
   <div id="t-acc" style="display:none;flex-direction:column;flex:1;overflow:hidden">
     <div class="acc-hero">
@@ -1386,7 +1367,6 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
           </div>
         </div>
 
-        <button class="acc-logout" onclick="doLogout()">🚪 Sign Out</button>
         <div class="acc-ver">ArogyaCode v2.0 · HBP 2022 · Build 2025</div>
 
       </div>
@@ -1403,9 +1383,6 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
     </div>
     <div class="ti" id="tb-bm" onclick="TAB('bm')">
       <div class="ti-ic">🔖</div><div class="ti-lb">Saved</div>
-    </div>
-    <div class="ti" id="tb-notif" onclick="TAB('notif')">
-      <div class="ti-ic notif-pip">🔔</div><div class="ti-lb">Alerts</div>
     </div>
     <div class="ti" id="tb-acc" onclick="TAB('acc')">
       <div class="ti-ic">👤</div><div class="ti-lb">Account</div>
@@ -1737,7 +1714,7 @@ function _applyProfileToAccount(p){
 let CT = 'home';
 function TAB(t){
   CT=t;
-  ['home','browse','bm','notif','acc'].forEach(x=>{
+  ['home','browse','bm','acc'].forEach(x=>{
     const el=document.getElementById('t-'+x);
     const tb=document.getElementById('tb-'+x);
     if(el) el.style.display = x===t?'flex':'none';
@@ -2226,13 +2203,6 @@ function refreshAccStats(){
   loadAccProfile(); // async — fires and updates UI when ready
 }
 
-function doLogout(){
-  if(confirm('Reset profile and return to setup?')){
-    localStorage.removeItem('ac_di');
-    localStorage.removeItem('ac_doc');
-    DOCTOR_INTRO();
-  }
-}
 
 // Search count tracked inside SEARCH()
 
