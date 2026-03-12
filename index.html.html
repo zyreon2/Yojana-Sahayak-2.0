@@ -1600,7 +1600,7 @@ function showAuthMsg(id,msg,type){
 }
 
 // ── Sign In ──────────────────────────────────────
-function doSignIn(){
+async function doSignIn(){
   const email=(document.getElementById('si-email').value||'').trim().toLowerCase();
   const pw=document.getElementById('si-pw').value||'';
   if(!email){showAuthMsg('si-err','Please enter your email address.');return}
@@ -1608,15 +1608,19 @@ function doSignIn(){
   if(!pw){showAuthMsg('si-err','Please enter your password.');return}
   const btn=document.querySelector('#lv-signin .btn-login');
   if(btn){btn.textContent='Signing in…';btn.disabled=true;}
-  _supa.auth.signInWithPassword({email,password:pw}).then(({data,error})=>{
+  try{
+    const {data,error}=await _supa.auth.signInWithPassword({email,password:pw});
     if(btn){btn.textContent='Sign In →';btn.disabled=false;}
     if(error){showAuthMsg('si-err',error.message);return;}
+    if(!data||!data.session){showAuthMsg('si-err','Sign in failed. Please try again.');return;}
     _supaSession=data.session;
-    _loadProfileFromSupabase(data.user.id).then(p=>{
-      if(p)_applyProfileToAccount(p);
-      MAIN();
-    });
-  });
+    const p=await _loadProfileFromSupabase(data.user.id);
+    if(p)_applyProfileToAccount(p);
+    MAIN();
+  }catch(e){
+    if(btn){btn.textContent='Sign In →';btn.disabled=false;}
+    showAuthMsg('si-err','Error: '+e.message);
+  }
 }
 
 // ── Sign Up step 1 (credentials) ─────────────────
