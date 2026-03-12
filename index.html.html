@@ -980,7 +980,7 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
         <div class="ob-dot a"></div><div class="ob-dot"></div><div class="ob-dot"></div>
       </div>
       <button class="btn-cta" onclick="OB(2)">Continue →</button>
-      <button class="btn-ghost" onclick="LOGIN()">Skip to login</button>
+      <button class="btn-ghost" onclick="DOCTOR_INTRO()">Skip</button>
     </div>
   </div>
 </div>
@@ -1011,7 +1011,7 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
         <div class="ob-dot"></div><div class="ob-dot a"></div><div class="ob-dot"></div>
       </div>
       <button class="btn-cta" onclick="OB(3)">Continue →</button>
-      <button class="btn-ghost" onclick="LOGIN()">Skip</button>
+      <button class="btn-ghost" onclick="DOCTOR_INTRO()">Skip</button>
     </div>
   </div>
 </div>
@@ -1041,195 +1041,73 @@ mark{background:#fef08a;border-radius:3px;padding:0 2px;color:inherit}
       <div class="ob-dots">
         <div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot a"></div>
       </div>
-      <button class="btn-cta" onclick="LOGIN()">Get Started 🚀</button>
+      <button class="btn-cta" onclick="DOCTOR_INTRO()">Get Started 🚀</button>
     </div>
   </div>
 </div>
 
-<!-- LOGIN SCREEN -->
-<div class="scr" id="s-login">
+<!-- DOCTOR INTRO SCREEN -->
+<div class="scr" id="s-doctor-intro">
   <div class="login-wrap">
     <div class="login-hero">
       <div class="login-hero-glow"></div>
       <div class="login-mark">&#127973;</div>
-      <h1 id="login-hero-title">Welcome, Doctor</h1>
-      <p id="login-hero-sub">Sign in to access your saved procedures</p>
+      <h1>Welcome, Doctor</h1>
+      <p>Tell us about yourself to get started</p>
     </div>
     <div class="login-card">
-
-      <!-- Sign In -->
-      <div id="lv-signin">
-        <h2>Sign In</h2>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Access MJPJAY &amp; PMJAY procedure database</p>
-        <div class="auth-msg err" id="si-err"></div>
-        <div class="fi">
-          <label class="fl">Medical Email</label>
-          <input class="fin" id="si-email" type="email" placeholder="dr.name@hospital.gov.in" autocomplete="email" oninput="clearAuthMsg('si-err')">
-        </div>
-        <div class="fi">
-          <label class="fl">Password</label>
-          <div class="pw-wrap">
-            <input class="fin" id="si-pw" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" oninput="clearAuthMsg('si-err')">
-            <button class="pw-eye" type="button" onclick="toggleEye('si-pw',this)">&#128065;</button>
-          </div>
-        </div>
-        <div class="fp-link"><a onclick="showView('lv-forgot')">Forgot password?</a></div>
-        <button class="btn-login" onclick="doSignIn()">Sign In &#8594;</button>
-        <div class="login-alt">New here? <a onclick="showView('lv-signup')">Create account</a></div>
-      </div>
-
-      <!-- Sign Up -->
-      <div id="lv-signup" style="display:none">
-        <h2>Create Account</h2>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Set up your ArogyaCode credentials</p>
-        <div class="auth-msg err" id="su-err"></div>
-        <div class="fi">
-          <label class="fl">Medical Email <span class="su-req">*</span></label>
-          <input class="fin" id="su-email" type="email" placeholder="dr.name@hospital.gov.in" autocomplete="email" oninput="clearAuthMsg('su-err')">
-        </div>
-        <div class="fi">
-          <label class="fl">Password <span class="su-req">*</span></label>
-          <div class="pw-wrap">
-            <input class="fin" id="su-pw" type="password" placeholder="Min. 8 characters" autocomplete="new-password" oninput="onPwInput(this,'su-str');clearAuthMsg('su-err')">
-            <button class="pw-eye" type="button" onclick="toggleEye('su-pw',this)">&#128065;</button>
-          </div>
-          <div class="pw-str"><div class="pw-str-fill" id="su-str"></div></div>
-        </div>
-        <div class="fi">
-          <label class="fl">Confirm Password <span class="su-req">*</span></label>
-          <div class="pw-wrap">
-            <input class="fin" id="su-pw2" type="password" placeholder="Re-enter password" autocomplete="new-password" oninput="clearAuthMsg('su-err')">
-            <button class="pw-eye" type="button" onclick="toggleEye('su-pw2',this)">&#128065;</button>
-          </div>
-        </div>
-        <button class="btn-login" onclick="doSignUp()" style="background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 4px 20px rgba(0,181,160,.3)">Create Account &#8594;</button>
-        <div class="login-alt">Already have an account? <a onclick="showView('lv-signin')">Sign in</a></div>
-      </div>
-
-      <!-- Forgot Password -->
-      <div id="lv-forgot" style="display:none">
-        <button class="auth-back" onclick="showView('lv-signin')">&#8592; Back to Sign In</button>
-        <h2>Reset Password</h2>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">We'll send a reset link to your registered email</p>
-        <div class="auth-msg ok" id="fp-ok"></div>
-        <div class="fi">
-          <label class="fl">Medical Email</label>
-          <input class="fin" id="fp-email" type="email" placeholder="dr.name@hospital.gov.in" autocomplete="email">
-        </div>
-        <button class="btn-login" onclick="doForgotPw()">Send Reset Link &#8594;</button>
-        <div class="login-alt" style="margin-top:14px"><a onclick="showView('lv-signin')">Back to sign in</a></div>
-      </div>
-
-      <!-- New Password (after clicking reset email link) -->
-      <div id="lv-newpw" style="display:none">
-        <h2>Set New Password</h2>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Enter your new password below</p>
-        <div class="auth-msg err" id="np-err"></div>
-        <div class="fi" style="position:relative">
-          <label class="fl">New Password</label>
-          <input class="fin" id="np-pw" type="password" placeholder="Min. 8 characters" oninput="onPwInput(this,'np-str')">
-          <button class="eye-btn" onclick="toggleEye('np-pw',this)" type="button">&#128065;</button>
-          <div class="pw-str-bar"><div class="pw-str-fill" id="np-str"></div></div>
-        </div>
-        <div class="fi" style="position:relative">
-          <label class="fl">Confirm New Password</label>
-          <input class="fin" id="np-pw2" type="password" placeholder="Repeat new password">
-          <button class="eye-btn" onclick="toggleEye('np-pw2',this)" type="button">&#128065;</button>
-        </div>
-        <button class="btn-login" onclick="doSetNewPassword()" style="background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 4px 20px rgba(0,181,160,.3)">Set New Password &#8594;</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- SIGNUP DETAILS SCREEN -->
-<div class="scr" id="s-signup">
-  <div class="signup-wrap">
-    <div class="signup-hero">
-      <div class="signup-hero-glow"></div>
-      <div class="signup-step-badge">Step 2 of 2 &#8212; Professional Details</div>
-      <h1>Complete your profile</h1>
-      <p>Your details help personalise your ArogyaCode experience</p>
-    </div>
-    <div class="signup-card">
-      <div class="signup-progress">
-        <div class="sp-dot done"></div>
-        <div class="sp-dot active"></div>
-      </div>
-      <h2 style="font-size:17px;font-weight:800;color:var(--ink);margin-bottom:4px">Professional Details</h2>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:20px">Fields marked <span class="su-req">*</span> are required</p>
-      <div class="auth-msg err" id="spd-err"></div>
+      <h2>Your Details</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Quick setup — takes only a few seconds</p>
+      <div class="auth-msg err" id="di-err"></div>
 
       <div class="fi">
         <label class="fl">Full Name <span class="su-req">*</span></label>
-        <input class="fin" id="spd-name" type="text" placeholder="Dr. Firstname Lastname" autocomplete="name">
+        <input class="fin" id="di-name" type="text" placeholder="Dr. Firstname Lastname" autocomplete="name" oninput="document.getElementById('di-err').className='auth-msg err'">
       </div>
       <div class="fi">
-        <label class="fl">Highest Qualification <span class="su-req">*</span></label>
-        <input class="fin" id="spd-qual" type="text" placeholder="e.g. MBBS, MS (General Surgery)">
-      </div>
-      <div class="su-row">
-        <div class="fi">
-          <label class="fl">Department <span class="su-req">*</span></label>
-          <select class="fin fin-select" id="spd-dept">
-            <option value="">Select...</option>
-            <option>General Surgery</option>
-            <option>General Medicine</option>
-            <option>Cardiology</option>
-            <option>Orthopaedics</option>
-            <option>Ophthalmology</option>
-            <option>Urology</option>
-            <option>Neurosurgery</option>
-            <option>ENT</option>
-            <option>Obstetrics &amp; Gynecology</option>
-            <option>Pediatric Surgery</option>
-            <option>Medical Oncology</option>
-            <option>Surgical Oncology</option>
-            <option>Burns Management</option>
-            <option>Radiology</option>
-            <option>Anesthesia</option>
-            <option>Pathology</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="fi">
-          <label class="fl">Designation <span class="su-req">*</span></label>
-          <select class="fin fin-select" id="spd-desig">
-            <option value="">Select...</option>
-            <option>Resident / Intern</option>
-            <option>Junior Consultant</option>
-            <option>Consultant</option>
-            <option>Senior Consultant</option>
-            <option>Associate Professor</option>
-            <option>Professor</option>
-            <option>HOD</option>
-            <option>Medical Officer</option>
-            <option>Civil Surgeon</option>
-            <option>Medical Superintendent</option>
-            <option>Other</option>
-          </select>
-        </div>
+        <label class="fl">Designation <span class="su-req">*</span></label>
+        <select class="fin fin-select" id="di-desig">
+          <option value="">Select...</option>
+          <option>Resident / Intern</option>
+          <option>Junior Consultant</option>
+          <option>Consultant</option>
+          <option>Senior Consultant</option>
+          <option>Associate Professor</option>
+          <option>Professor</option>
+          <option>HOD</option>
+          <option>Medical Officer</option>
+          <option>Civil Surgeon</option>
+          <option>Medical Superintendent</option>
+          <option>Other</option>
+        </select>
       </div>
       <div class="fi">
-        <label class="fl">Hospital / Institution <span class="su-req">*</span></label>
-        <input class="fin" id="spd-hosp" type="text" placeholder="e.g. Pune General Hospital" autocomplete="organization">
-      </div>
-      <div class="fi">
-        <label class="fl">Phone Number <span class="su-req">*</span></label>
-        <input class="fin" id="spd-phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" maxlength="14">
-      </div>
-      <div class="fi">
-        <label class="fl">City</label>
-        <input class="fin" id="spd-city" type="text" placeholder="e.g. Pune, Maharashtra">
+        <label class="fl">Department <span class="su-req">*</span></label>
+        <select class="fin fin-select" id="di-dept">
+          <option value="">Select...</option>
+          <option>General Surgery</option>
+          <option>General Medicine</option>
+          <option>Cardiology</option>
+          <option>Orthopaedics</option>
+          <option>Ophthalmology</option>
+          <option>Urology</option>
+          <option>Neurosurgery</option>
+          <option>ENT</option>
+          <option>Obstetrics &amp; Gynecology</option>
+          <option>Pediatric Surgery</option>
+          <option>Medical Oncology</option>
+          <option>Surgical Oncology</option>
+          <option>Burns Management</option>
+          <option>Radiology</option>
+          <option>Anesthesia</option>
+          <option>Pathology</option>
+          <option>Other</option>
+        </select>
       </div>
 
-      <button class="btn-login" onclick="doCompleteProfile()" style="background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 4px 20px rgba(0,181,160,.3);margin-top:4px">
-        Complete Setup &amp; Enter App &#128640;
+      <button class="btn-login" onclick="doDoctorIntro()" style="background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 4px 20px rgba(0,181,160,.3);margin-top:4px">
+        Enter App &#128640;
       </button>
-      <div class="login-alt" style="margin-top:14px">
-        <a onclick="skipProfileSetup()">Skip for now &#8594;</a>
-      </div>
     </div>
   </div>
 </div>
@@ -1563,7 +1441,24 @@ function SCR(id){
   if(typeof window!=='undefined')window.scrollTo(0,0);
 }
 function OB(n){SCR('s-ob'+n)}
-function LOGIN(){localStorage.setItem('ac_ob','1');SCR('s-login');showView('lv-signin')}
+function LOGIN(){DOCTOR_INTRO()} // legacy alias
+function DOCTOR_INTRO(){localStorage.setItem('ac_ob','1');SCR('s-doctor-intro');}
+function doDoctorIntro(){
+  const name=(document.getElementById('di-name').value||'').trim();
+  const desig=document.getElementById('di-desig').value||'';
+  const dept=document.getElementById('di-dept').value||'';
+  const errEl=document.getElementById('di-err');
+  if(!name){errEl.className='auth-msg err show';errEl.textContent='Please enter your full name.';return;}
+  if(!desig){errEl.className='auth-msg err show';errEl.textContent='Please select your designation.';return;}
+  if(!dept){errEl.className='auth-msg err show';errEl.textContent='Please select your department.';return;}
+  // Save to localStorage
+  const d=JSON.parse(localStorage.getItem('ac_doc')||'{}');
+  d.name=name; d.post=desig; d.department=dept; d.specialty=dept;
+  localStorage.setItem('ac_doc',JSON.stringify(d));
+  localStorage.setItem('ac_di','1');
+  _applyProfileToAccount({name,desig,dept,qual:'',hosp:'',phone:'',city:'',email:''});
+  MAIN();
+}
 function MAIN(){SCR('s-main');TAB('home');setTimeout(_refreshHomeGreet,50);}
 function DET(){SCR('s-det')}
 
@@ -1856,20 +1751,17 @@ function TAB(t){
 /* ── REACTIVE HOME GREETING (ADDED) ── */
 async function _refreshHomeGreet(){
   try{
-    if(!_supaSession) return;
     const greet=document.getElementById('home-greet');
     const gtxt=document.getElementById('home-greet-text');
     const gname=document.getElementById('home-greet-name');
     const gdept=document.getElementById('home-greet-dept');
     if(!greet) return;
-    // Fetch fresh profile from Supabase
-    const p = await _loadProfileFromSupabase(_supaSession.user.id);
-    if(p) _applyProfileToAccount(p);
     const d=getDocData();
+    if(!d.name) return;
     const hr=new Date().getHours();
     const tod=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
     gtxt.textContent=tod+',';
-    gname.textContent=d.name||_supaSession.user.email||'Doctor';
+    gname.textContent=d.name||'Doctor';
     const parts=[];
     if(d.post)parts.push(d.post);
     if(d.department||d.specialty)parts.push(d.department||d.specialty);
@@ -2262,11 +2154,6 @@ function getDocData(){
 function saveDocData(data){ localStorage.setItem('ac_doc', JSON.stringify(data)); }
 
 async function loadAccProfile(){
-  // Always fetch fresh from Supabase if session exists
-  if(_supaSession){
-    const p = await _loadProfileFromSupabase(_supaSession.user.id);
-    if(p) _applyProfileToAccount(p);
-  }
   const data = getDocData();
   for(const k in data){
     const el = document.getElementById('fv-'+k);
@@ -2340,12 +2227,10 @@ function refreshAccStats(){
 }
 
 function doLogout(){
-  if(confirm('Sign out of Yojana Sahayak?')){
-    _supa.auth.signOut().then(()=>{
-      _supaSession=null;
-      SCR('s-login');
-      showView('lv-signin');
-    });
+  if(confirm('Reset profile and return to setup?')){
+    localStorage.removeItem('ac_di');
+    localStorage.removeItem('ac_doc');
+    DOCTOR_INTRO();
   }
 }
 
@@ -2361,56 +2246,19 @@ function doLogout(){
 
   setTimeout(()=>{BSSG();IBR();IN();RRC();},200);
 
-  // ── Supabase session restore ──────────────────
-  // Check if this is a password recovery redirect first
-  const _hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-  const _isRecovery = _hashParams.get('type')==='recovery' ||
-                      window.location.hash.includes('type=recovery');
-
-  if(_isRecovery){
-    // Password recovery link clicked — wait for onAuthStateChange
-    SCR('s-login');
-    showView('lv-newpw');
-  } else {
-    _supa.auth.getSession().then(async ({data})=>{
-      const sawOb=localStorage.getItem('ac_ob');
-      if(data?.session){
-        _supaSession=data.session;
-        const p=await _loadProfileFromSupabase(data.session.user.id);
-        if(p)_applyProfileToAccount(p);
-        MAIN();
-      } else if(sawOb){
-        LOGIN();
-      }
-      // else first launch: show onboarding (s-ob1 is .on by default)
-    });
+  // ── Simple session restore (no auth required) ──
+  const sawOb=localStorage.getItem('ac_ob');
+  const sawDI=localStorage.getItem('ac_di');
+  if(sawOb && sawDI){
+    // Already completed intro — go straight to app
+    const d=JSON.parse(localStorage.getItem('ac_doc')||'{}');
+    if(d.name) _applyProfileToAccount({name:d.name,desig:d.post,dept:d.department,qual:d.qualification,hosp:d.hospital,phone:d.phone,city:d.city,email:d.email});
+    MAIN();
+  } else if(sawOb){
+    // Saw onboarding but hasn't done intro yet
+    DOCTOR_INTRO();
   }
-
-  // ── Auth state listener ───────────────────────
-  _supa.auth.onAuthStateChange(async (event,session)=>{
-    if(event==='PASSWORD_RECOVERY'){
-      // User clicked reset link — show set new password form
-      _supaSession=session;
-      SCR('s-login');
-      showView('lv-newpw');
-      return;
-    }
-    if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session){
-      // Skip auto-login if we're in password recovery flow
-      if(document.getElementById('lv-newpw')?.style.display!=='none') return;
-      // Skip if doSignIn / doCompleteProfile already handled navigation
-      if(_directNavDone){ _directNavDone=false; return; }
-      _supaSession=session;
-      const p=await _loadProfileFromSupabase(session.user.id);
-      if(p){ _applyProfileToAccount(p); MAIN(); }
-      else {
-        // Preserve _pendingCreds if already set by doSignUp (it contains the password)
-        if(!_pendingCreds) _pendingCreds={email:session.user.email,userId:session.user.id};
-        localStorage.setItem('ac_ob','1');
-        SCR('s-signup');
-      }
-    }
-  });
+  // else: first launch — show onboarding (s-ob1 is .on by default)
 })();
 
 /* ── SPLASH SCREEN (ADDED) ── */
