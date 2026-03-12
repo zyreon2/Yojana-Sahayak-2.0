@@ -1418,6 +1418,19 @@ function SCR(id){
   if(typeof window!=='undefined')window.scrollTo(0,0);
 }
 function OB(n){SCR('s-ob'+n)}
+  async function initAnonSession() {
+  const { data: existing } = await _supa.auth.getSession();
+  if (existing?.session) {
+    _supaSession = existing.session;
+    return existing.session;
+  }
+  const { data, error } = await _supa.auth.signInAnonymously();
+  if (!error && data.session) {
+    _supaSession = data.session;
+    return data.session;
+  }
+  return null;
+}
 function LOGIN(){DOCTOR_INTRO()} // legacy alias
 function DOCTOR_INTRO(){localStorage.setItem('ac_ob','1');SCR('s-doctor-intro');}
 function doDoctorIntro(){
@@ -1428,11 +1441,24 @@ function doDoctorIntro(){
   if(!name){errEl.className='auth-msg err show';errEl.textContent='Please enter your full name.';return;}
   if(!desig){errEl.className='auth-msg err show';errEl.textContent='Please select your designation.';return;}
   if(!dept){errEl.className='auth-msg err show';errEl.textContent='Please select your department.';return;}
+  // Get or create anonymous Supabase session
+  const session = await initAnonSession();
+  const uid = session?.user?.id;
+
   // Save to localStorage
   const d=JSON.parse(localStorage.getItem('ac_doc')||'{}');
   d.name=name; d.post=desig; d.department=dept; d.specialty=dept;
   localStorage.setItem('ac_doc',JSON.stringify(d));
   localStorage.setItem('ac_di','1');
+  // Save to Supabase profiles table
+  if (uid) {
+    await _supa.from('profiles').upsert({
+      id: uid,
+      name,
+      designation: desig,
+      department: dept,
+    });
+  }
   _applyProfileToAccount({name,desig,dept,qual:'',hosp:'',phone:'',city:'',email:''});
   MAIN();
 }
@@ -2207,7 +2233,7 @@ function refreshAccStats(){
 // Search count tracked inside SEARCH()
 
 // INIT
-(function(){
+(async function(){
   // Restore bookmarks
   try{const bm=JSON.parse(localStorage.getItem('ac_bm')||'[]');bm.forEach(c=>BMS.add(c));}catch(e){}
   UBC();
@@ -2220,7 +2246,8 @@ function refreshAccStats(){
   const sawOb=localStorage.getItem('ac_ob');
   const sawDI=localStorage.getItem('ac_di');
   if(sawOb && sawDI){
-    // Already completed intro — go straight to app
+    // Already completed intro — restore session then go to app
+    await initAnonSession();
     const d=JSON.parse(localStorage.getItem('ac_doc')||'{}');
     if(d.name) _applyProfileToAccount({name:d.name,desig:d.post,dept:d.department,qual:d.qualification,hosp:d.hospital,phone:d.phone,city:d.city,email:d.email});
     MAIN();
