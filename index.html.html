@@ -1760,14 +1760,11 @@ function toggleEye(id,btn){
   else{inp.type='password';btn.innerHTML='&#128065;'}
 }
 
-// ── Load profile from Supabase (with timeout) ────
+// ── Load profile from Supabase ───────────────────
 async function _loadProfileFromSupabase(uid){
   if(!uid) return null;
   try{
-    // Race against a 5s timeout so sign-in never gets stuck
-    const fetchProfile = _supa.from('profiles').select('*').eq('id',uid).single();
-    const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
-    const {data,error} = await Promise.race([fetchProfile, timeout]);
+    const {data,error} = await _supa.from('profiles').select('*').eq('id',uid).single();
     if(error||!data) return null;
     return {
       name:data.name,       qual:data.qualification,
@@ -1775,7 +1772,7 @@ async function _loadProfileFromSupabase(uid){
       hosp:data.hospital,   phone:data.phone,
       city:data.city,       email:data.email
     };
-  }catch(e){ return null; } // timeout or error → return null, never block
+  }catch(e){ return null; }
 }
 
 // ── Apply profile to Account tab + update DOM ────
