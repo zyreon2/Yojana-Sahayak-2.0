@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ArogyaCode — MJPJAY & PMJAY</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00b5a0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ArogyaCode">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1440,12 +1449,70 @@ function MAIN(){SCR('s-main');TAB('home');setTimeout(_refreshHomeGreet,50);}
 function DET(){SCR('s-det')}
 
 // ── SUPABASE AUTH ────────────────────────────────
-const SUPA_URL = 'https://afqipfgtakjcrubbvltg.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmcWlwZmd0YWtqY3J1YmJ2bHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTI4MDksImV4cCI6MjA4ODg2ODgwOX0.YX96SUwr6nvdIHyjMPC9FfNoNR8CmhJt7YaO9LIj7aE';
+const SUPA_URL = 'https://ftmkjrkfmxxajomwduec.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0bWtqcmtmbXh4YWpvbXdkdWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjk2OTIsImV4cCI6MjA4ODk0NTY5Mn0.ee3YUi1K6Vg86345RHPFlOcDFMcJzPOaFnH-MEIp5U8';
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let _pendingCreds = null;
 let _supaSession = null;
 let _directNavDone = false; // prevents onAuthStateChange from overriding explicit MAIN() calls
+let _heartbeatTimer = null;
+
+// ── Visitor ID (no login needed) ─────────────────
+// Each device gets a unique random ID on first open,
+// stored invisibly on their phone. This never changes.
+function _getVisitorId() {
+  let vid = localStorage.getItem('ac_vid');
+  if (!vid) {
+    vid = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('ac_vid', vid);
+  }
+  return vid;
+}
+const VISITOR_ID = _getVisitorId();
+
+// ── Event Logging (no login required) ────────────
+// Sends data to Supabase visitor_events table.
+// Works for all users — logged in or not.
+async function logEvent(type, payload = {}) {
+  try {
+    const d = (typeof getDocData === 'function') ? getDocData() : {};
+    await _supa.from('visitor_events').insert({
+      visitor_id:  VISITOR_ID,
+      event_type:  type,
+      payload: {
+        ...payload,
+        // Doctor identity fields — shown directly in your Supabase table
+        name:        d.name        || null,
+        designation: d.post        || null,
+        department:  d.department  || d.specialty || null,
+        hospital:    d.hospital    || null,
+        city:        d.city        || null,
+        device:      /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+        ts:          new Date().toISOString()
+      }
+    });
+  } catch(e) { /* non-blocking — never crash the app */ }
+}
+
+// ── Active Session Heartbeat (pings every 2 min) ─
+// This tells you who is actively using the app right now.
+function _startHeartbeat() {
+  _stopHeartbeat();
+  logEvent('session_active', { page: CT || 'home' });
+  _heartbeatTimer = setInterval(() => {
+    logEvent('session_active', { page: CT || 'home' });
+  }, 2 * 60 * 1000);
+}
+
+function _stopHeartbeat() {
+  if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+}
+
+// Pause heartbeat when user switches to another app/tab
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _stopHeartbeat(); }
+  else { _startHeartbeat(); }
+});
 
 function isEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((e||'').trim())}
 
@@ -1487,6 +1554,8 @@ async function doSignIn(){
     if(error){showAuthMsg('si-err',error.message);return;}
     if(!data||!data.session){showAuthMsg('si-err','Sign in failed. Please try again.');return;}
     _supaSession=data.session;
+    logEvent('login', { method: 'email' });
+    _startHeartbeat();
     try{
       const p=await _loadProfileFromSupabase(data.user.id);
       if(p) _applyProfileToAccount(p);
@@ -1799,6 +1868,9 @@ function SEARCH(v){
   sc.sort((a,b)=>b._s-a._s);
   SR=sc; SP=0;
 
+  // Track search in Supabase
+  logEvent('search', { query: v, result_count: sc.length });
+
   document.getElementById('hd').style.display='none';
   document.getElementById('hr').style.display='flex';
   document.getElementById('rc').textContent=sc.length.toLocaleString();
@@ -1891,6 +1963,14 @@ function PC(p,q){
 function OD(code){
   const p=D.find(x=>x.pc===code);if(!p)return;
   CUR=p;FROM=CT;
+
+  // Track which procedures doctors are viewing
+  logEvent('view_procedure', {
+    code:      p.pc,
+    name:      p.pn,
+    specialty: p.sp,
+    rate:      p.r
+  });
   const bm=BMS.has(p.pc);
   document.getElementById('dh').innerHTML=`
     <button class="det-back" onclick="CD()">← Back</button>
@@ -2216,6 +2296,13 @@ function refreshAccStats(){
 
   setTimeout(()=>{BSSG();IBR();IN();RRC();},200);
 
+  // ── Track every app open ──────────────────────
+  const _isReturn = !!localStorage.getItem('ac_ob');
+  logEvent(_isReturn ? 'app_open_return' : 'app_open_new', {
+    referrer: document.referrer || 'direct'
+  });
+  _startHeartbeat(); // start pinging immediately — no login needed
+
   // ── Simple session restore (no auth required) ──
   const sawOb=localStorage.getItem('ac_ob');
   const sawDI=localStorage.getItem('ac_di');
@@ -2241,6 +2328,16 @@ function refreshAccStats(){
   },2500);
 })();
 /* ── END SPLASH SCREEN ── */
+
+/* ── PWA SERVICE WORKER ── */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg){ console.log('SW registered'); })
+      .catch(function(err){ console.log('SW failed: ', err); });
+  });
+}
+/* ── END SERVICE WORKER ── */
 </script>
 </body>
 </html>
